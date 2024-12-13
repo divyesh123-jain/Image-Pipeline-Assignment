@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Canvas } from './components/Canvas';
 import { Brush } from 'lucide-react';
 import { ImagePair } from './components/ImagePair';

@@ -25,7 +25,7 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
       });
 
       fabricCanvas.freeDrawingBrush = new fabric.PencilBrush(fabricCanvas);
-      fabricCanvas.freeDrawingBrush.color = '#000000';
+      fabricCanvas.freeDrawingBrush.color = '#ffffff';
       fabricCanvas.freeDrawingBrush.width = brushSize;
 
       setCanvas(fabricCanvas);
