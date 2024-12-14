@@ -24,8 +24,7 @@ function App() {
             <h1 className="text-3xl font-bold text-gray-900">Image Inpainting Widget</h1>
           </div>
           <p className="text-gray-600">
-            Upload an image and draw on it to create a mask. The mask will show your drawing in white
-            against a black background.
+            Upload an image and draw on it to create a mask.
           </p>
         </div>
 
