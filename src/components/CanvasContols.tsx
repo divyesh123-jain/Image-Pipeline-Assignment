@@ -3,12 +3,14 @@ import React from 'react';
 interface CanvasControlsProps {
   onClear: () => void;
   onGenerate: () => void;
+  onExport: () => void;
   hasImage: boolean;
 }
 
 export const CanvasControls: React.FC<CanvasControlsProps> = ({
   onClear,
   onGenerate,
+  onExport,
   hasImage,
 }) => {
   return (
@@ -25,6 +27,13 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         disabled={!hasImage}
       >
         Generate Mask
+      </button>
+      <button
+        onClick={onExport}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={!hasImage}
+      >
+        Export Image
       </button>
     </div>
   );

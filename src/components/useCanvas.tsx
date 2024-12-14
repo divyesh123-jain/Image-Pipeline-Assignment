@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { fabric } from 'fabric';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,55 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
     left: number,
     top: number
   } | null>(null);
+  const [drawingColor, setDrawingColor] = useState<string>('#000000');
+  
+  // State for undo/redo functionality
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Save canvas state
+  const saveCanvasState = useCallback(() => {
+    if (!canvas) return;
+
+    const currentState = canvas.toDataURL();
+    setHistory(prevHistory => {
+      // If we're in the middle of the history and make a new change, 
+      // truncate the future states
+      const newHistory = prevHistory.slice(0, historyIndex + 1);
+      return [...newHistory, currentState];
+    });
+    setHistoryIndex(prev => prev + 1);
+  }, [canvas, historyIndex]);
+
+  // Undo functionality
+  const undo = useCallback(() => {
+    if (!canvas || historyIndex <= 0) return;
+
+    const newIndex = historyIndex - 1;
+    const previousState = history[newIndex];
+
+    fabric.Image.fromURL(previousState, (img) => {
+      canvas.clear();
+      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+      canvas.renderAll();
+      setHistoryIndex(newIndex);
+    });
+  }, [canvas, history, historyIndex]);
+
+  // Redo functionality
+  const redo = useCallback(() => {
+    if (!canvas || historyIndex >= history.length - 1) return;
+
+    const newIndex = historyIndex + 1;
+    const nextState = history[newIndex];
+
+    fabric.Image.fromURL(nextState, (img) => {
+      canvas.clear();
+      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+      canvas.renderAll();
+      setHistoryIndex(newIndex);
+    });
+  }, [canvas, history, historyIndex]);
 
   // Initialize canvas
   useEffect(() => {
@@ -25,8 +74,11 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
       });
 
       fabricCanvas.freeDrawingBrush = new fabric.PencilBrush(fabricCanvas);
-      fabricCanvas.freeDrawingBrush.color = '#ffffff';
+      fabricCanvas.freeDrawingBrush.color = drawingColor;
       fabricCanvas.freeDrawingBrush.width = brushSize;
+
+      // Add event listener to save state after drawing
+      fabricCanvas.on('mouse:up', saveCanvasState);
 
       setCanvas(fabricCanvas);
 
@@ -36,11 +88,13 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
     }
   }, []);
 
+  // Update brush color and size
   useEffect(() => {
     if (canvas) {
+      canvas.freeDrawingBrush.color = drawingColor;
       canvas.freeDrawingBrush.width = brushSize;
     }
-  }, [brushSize, canvas]);
+  }, [brushSize, drawingColor, canvas]);
 
   const handleFile = (file: File) => {
     if (!canvas) return;
@@ -81,6 +135,11 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
           setBackgroundImage(fabricImg);
           canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
           canvas.renderAll();
+          
+          // Reset history when new image is uploaded
+          setHistory([canvas.toDataURL()]);
+          setHistoryIndex(0);
+          
           toast.success('Image uploaded successfully!');
         });
       };
@@ -96,9 +155,55 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
         canvas.setBackgroundImage(backgroundImage, canvas.renderAll.bind(canvas));
       }
       canvas.renderAll();
+      
+      // Reset history
+      const currentState = canvas.toDataURL();
+      setHistory([currentState]);
+      setHistoryIndex(0);
+      
       toast.success('Canvas cleared');
     }
   };
+
+
+  const exportImage = () => {
+    if (!originalImage || !backgroundImage || !imageMetadata) {
+      toast.error('Please upload an image and generate a mask first');
+      return null;
+    }
+
+    const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = imageMetadata.originalWidth;
+  exportCanvas.height = imageMetadata.originalHeight;
+  const ctx = exportCanvas.getContext('2d')!;
+
+  // Draw the original image
+  const img = new Image();
+  img.src = originalImage;
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, imageMetadata.originalWidth, imageMetadata.originalHeight);
+
+    // Generate the mask image
+    const maskDataUrl = generateMask();
+    if (maskDataUrl) {
+      const maskImg = new Image();
+      maskImg.src = maskDataUrl;
+      maskImg.onload = () => {
+        // Draw the mask image on top of the original image
+        ctx.drawImage(maskImg, 0, 0, imageMetadata.originalWidth, imageMetadata.originalHeight);
+
+        // Export the combined image as a data URL
+        const combinedImageDataUrl = exportCanvas.toDataURL('image/png');
+        // You can now use this data URL to download the image or display it
+        const link = document.createElement('a');
+        link.href = combinedImageDataUrl;
+        link.download = 'combined_image.png';
+        link.click();
+        toast.success('Image exported successfully!');
+      };
+    }
+  };
+};
 
   const generateMask = () => {
     if (!canvas || !originalImage || !backgroundImage || !imageMetadata) {
@@ -161,10 +266,15 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, brushSi
   };
 
   return {
-    canvas,
+canvas,
     originalImage,
+    undo,
+    redo,
+    exportImage,
     handleFile,
     clearCanvas,
-    generateMask
+    generateMask,
+    drawingColor,
+    setDrawingColor
   };
 };
