@@ -95,7 +95,6 @@ The application will be available at `http://localhost:5173`.
 3. **Generate Output**
    - Click "Generate Mask" to create the final image
    - The result will show both the original image and the mask side by side
-   - The mask shows your drawings in white against a semi-transparent black overlay
 
 ## Project Structure
 
