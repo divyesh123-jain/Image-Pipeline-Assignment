@@ -2,7 +2,6 @@
 
 A modern, interactive web application for creating image masks through drawing. Built with React, TypeScript, and Fabric.js.
 
-![Image Inpainting Widget](https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=2074&auto=format&fit=crop)
 
 ## Features
 
@@ -59,12 +58,12 @@ A modern, interactive web application for creating image masks through drawing. 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/image-inpainting-widget.git
+   git clone https://github.com/divyesh123-jain/Image-Pipeline-Assignment
    ```
 
 2. Navigate to the project directory:
    ```bash
-   cd image-inpainting-widget
+   cd Image-Pipeline-Assignment
    ```
 
 3. Install dependencies:
@@ -89,8 +88,9 @@ The application will be available at `http://localhost:5173`.
    - Use the brush tools to draw on the image
    - Adjust brush size using the + and - buttons
    - Select different colors from the palette
-   - Use undo/redo for corrections
-   - Clear the canvas to start over
+   
+   
+   
 
 3. **Generate Output**
    - Click "Generate Mask" to create the final image
@@ -106,9 +106,10 @@ src/
 │   │   ├── Canvas.tsx           # Main canvas component
 │   │   ├── CanvasControls.tsx   # Clear and generate buttons
 │   │   ├── UploadPrompt.tsx     # Image upload UI
-│   │   └── useCanvas.ts         # Canvas logic and state management
-│   └── ImagePair/
-│       └── ImagePair.tsx        # Side-by-side image display
+│   │   └── useCanvas.ts
+|       └── ImagePair.tsx          # Canvas logic and state management
+│   
+│              # Side-by-side image display
 ├── App.tsx                      # Main application component
 └── main.tsx                     # Application entry point
 ```
